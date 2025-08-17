@@ -23,7 +23,7 @@ export default function TdvPage() {
   });
 
   const token   = localStorage.getItem('token');
-  const email   = localStorage.getItem('email') || '';
+  const email   = localStorage.getItem('usuario') || '';
   const headers = { Authorization: `Bearer ${token}` };
 
   // parse "DD/MM" ou legado "18" → { day, month }

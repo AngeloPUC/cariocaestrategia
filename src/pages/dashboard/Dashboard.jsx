@@ -21,7 +21,7 @@ export default function Dashboard() {
   const navigate                                = useNavigate();
 
   const token  = localStorage.getItem('token');
-  const email  = localStorage.getItem('email') || '';
+  const email  = localStorage.getItem('usuario') || '';
   const headers = { Authorization: `Bearer ${token}` };
   const API    = 'https://api-estrategia.vercel.app';
 

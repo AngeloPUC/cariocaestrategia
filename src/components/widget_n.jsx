@@ -9,7 +9,7 @@ export default function WidgetN() {
   const [erro, setErro]     = useState('');
 
   const token = localStorage.getItem('token');
-  const email = localStorage.getItem('email');
+  const email = localStorage.getItem('usuario');
   const headers = { Authorization: `Bearer ${token}` };
 
   useEffect(() => {

@@ -71,7 +71,7 @@ const WidgetCON = () => {
   const [pendingValue, setPendingValue]   = useState(0);
   const [erro, setErro]                   = useState('');
   const token                              = localStorage.getItem('token');
-  const email                              = localStorage.getItem('email') || '';
+  const email                              = localStorage.getItem('usuario') || '';
 
   useEffect(() => {
     async function fetchConsorcios() {

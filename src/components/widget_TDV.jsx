@@ -74,7 +74,7 @@ const WidgetTDV = () => {
   const [pontosSemestre, setPontosSemestre]   = useState(0);
   const [erro, setErro]                       = useState('');
   const token                                  = localStorage.getItem('token');
-  const email                                  = localStorage.getItem('email') || '';
+  const email                                  = localStorage.getItem('usuario') || '';
 
   useEffect(() => {
     async function fetchTDV() {

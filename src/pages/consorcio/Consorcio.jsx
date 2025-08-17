@@ -31,7 +31,7 @@ export default function ConsorcioPage() {
   });
 
   const token = localStorage.getItem('token');
-  const email = localStorage.getItem('email') || '';
+  const email = localStorage.getItem('usuario') || '';
   const headers = { Authorization: `Bearer ${token}` };
 
   useEffect(() => {
