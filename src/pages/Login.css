@@ -1,0 +1,56 @@
+body {
+  background-color: #e0f2ff;       /* ✅ Fundo aplicado à tela inteira */
+  margin: 0;
+  padding: 0;
+  font-family: sans-serif;
+  color: black;                    /* ✅ Texto preto */
+}
+
+.login {
+  padding: 40px;
+  max-width: 400px;
+  margin: auto;
+  text-align: center;
+  min-height: calc(100vh - 94px);  /* ✅ Espaço para header + footer */
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+/* Título */
+.login h2 {
+  font-size: 24px;
+  margin-bottom: 20px;
+}
+
+/* Formulário centralizado */
+.login form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+/* Inputs */
+.login input {
+  padding: 10px;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+/* Botão */
+.login button {
+  padding: 10px;
+  font-size: 16px;
+  background-color: #0266c8;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.login button:hover {
+  background-color: #0147a0;
+}

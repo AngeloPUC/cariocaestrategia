@@ -1,0 +1,204 @@
+/* src/pages/tarefas/Tarefas.css */
+
+/* Container geral */
+.tarefas-container {
+  margin: 2rem;
+  padding: 2rem;
+  border: 1px solid #90caf9;
+  border-radius: 8px;
+  background-color: #f0f8ff;
+}
+
+/* Header: empilha em duas linhas */
+.tarefas-header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+/* Linha de cima: Voltar + Título */
+.linha-topo {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+/* Linha de baixo: botão Novo alinhado à direita */
+.linha-novo {
+  display: flex;
+  justify-content: flex-end;
+}
+
+/* Botão Voltar */
+.btn-voltar {
+  background: none;
+  border: none;
+  color: #004aad;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.btn-voltar:hover {
+  text-decoration: underline;
+}
+
+/* Botão Novo (e Salvar principal do formulário) */
+.btn-novo {
+  padding: 0.6rem 1rem;
+  background-color: #004aad;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1rem;
+}
+
+.btn-novo:hover {
+  background-color: #00338d;
+}
+
+/* Seções de tarefas */
+.tarefas-section {
+  margin-bottom: 2rem;
+}
+
+.tarefas-section h3 {
+  color: #004aad;
+  margin-bottom: 0.8rem;
+}
+
+/* Tabela de tarefas */
+.tabela-tarefas {
+  width: 100%;
+  border-collapse: collapse;
+  box-shadow: 0 0 6px rgba(0, 0, 0, 0.05);
+}
+
+.tabela-tarefas th {
+  background-color: #e3f2fd;
+  color: #004aad;
+  padding: 0.8rem;
+  border-bottom: 2px solid #90caf9;
+  text-align: left;
+}
+
+.tabela-tarefas td {
+  padding: 0.7rem;
+  border-bottom: 1px solid #d0e5fc;
+}
+
+.tabela-tarefas tr:hover {
+  background-color: #e8f4ff;
+}
+
+/* Ações na tabela */
+.acoes-tabela {
+  display: flex;
+  gap: 8px;
+}
+
+.acoes-tabela button {
+  margin: 0;
+}
+
+.btn-editar {
+  padding: 0.3rem 0.6rem;
+  background-color: #ffd54f;
+  color: #004aad;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.btn-editar:hover {
+  background-color: #ffca28;
+}
+
+.btn-excluir {
+  padding: 0.3rem 0.6rem;
+  background-color: #e57373;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.btn-excluir:hover {
+  background-color: #ef5350;
+}
+
+.btn-consultar {
+  padding: 0.3rem 0.6rem;
+  background-color: #004aad;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.btn-consultar:hover {
+  background-color: #00338d;
+}
+
+/* Formulário de criação/edição */
+.form-tarefa {
+  margin-top: 2rem;
+  padding: 1.5rem;
+  border: 1px solid #90caf9;
+  border-radius: 8px;
+  background-color: #fff;
+  box-shadow: 0 0 8px rgba(0, 74, 173, 0.05);
+}
+
+.form-tarefa h4 {
+  color: #004aad;
+  margin-bottom: 1rem;
+  font-size: 1.2rem;
+}
+
+.form-tarefa label {
+  display: block;
+  margin-bottom: 1rem;
+  font-size: 0.95rem;
+}
+
+.form-tarefa input,
+.form-tarefa textarea {
+  width: 100%;
+  margin-top: 0.3rem;
+  padding: 0.6rem;
+  border: 1px solid #90caf9;
+  border-radius: 4px;
+  font-size: 0.95rem;
+  background-color: #f9fcff;
+}
+
+.form-tarefa textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.form-tarefa button {
+  margin-right: 0.5rem;
+}
+
+/* Detalhes da tarefa */
+.detalhes-tarefa {
+  margin-top: 2rem;
+  padding: 1.5rem;
+  border: 1px solid #90caf9;
+  border-radius: 8px;
+  background-color: #fff;
+  box-shadow: 0 0 8px rgba(0, 74, 173, 0.05);
+}
+
+.detalhes-tarefa h4 {
+  color: #004aad;
+  margin-bottom: 1rem;
+}
+
+.detalhes-tarefa p {
+  margin: 0.4rem 0;
+  font-size: 1rem;
+}

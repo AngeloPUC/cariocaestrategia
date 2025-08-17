@@ -1,0 +1,59 @@
+.cabecalho {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #0077B6;
+  color: white;
+  padding: 6px 16px; /* ✅ Reduzido ~30% */
+  height: 60px;       /* ✅ Altura fixa e enxuta */
+  box-sizing: border-box;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+}
+
+.menu-toggle {
+  font-size: 1.6em;
+  background: none;
+  border: none;
+  color: white;
+  cursor: pointer;
+}
+
+.menu {
+  display: none;
+  flex-direction: column;
+  background: #0077B6;
+  position: absolute;
+  top: 60px;
+  right: 0;
+  padding: 10px;
+  border-radius: 0 0 0 10px;
+}
+
+.menu.aberto {
+  display: flex;
+}
+
+.menu a,
+.menu button {
+  color: white;
+  background: none;
+  border: none;
+  margin: 5px 0;
+  cursor: pointer;
+  text-align: left;
+  font-size: 1em;
+  text-decoration: none;
+  padding-left: 4px;
+}
+
+.menu a:hover,
+.menu button:hover {
+  text-decoration: underline;
+}

@@ -1,0 +1,83 @@
+/* src/components/Widget.css */
+
+.widget-container {
+  background-color: #0077B6;
+  color: white;
+  border-radius: 8px;
+  padding: 12px 20px;
+  box-sizing: border-box;
+  font-family: 'Segoe UI', sans-serif;
+  width: 100%;
+  max-width: 100%;
+  margin: 0 auto;
+}
+
+/* Título */
+.widget-container h3 {
+  margin-top: 0;
+  margin-bottom: 14px;
+  font-size: 1.1em;
+  font-weight: 600;
+}
+
+/* Blocos em grid uniforme */
+.widget-blocos {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  justify-items: center;
+}
+
+/* Bloco individual */
+.bloco {
+  background-color: rgba(255, 255, 255, 0.08);
+  border-radius: 6px;
+  padding: 12px;
+  box-sizing: border-box;
+  text-align: center;
+  width: 100%;
+  max-width: 240px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 8px;
+  color: #ffffff;
+}
+
+/* Título dentro do bloco */
+.bloco h4 {
+  margin: 0;
+  font-size: 1em;
+  font-weight: 500;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+/* Contador */
+.contador {
+  font-size: 1.6em;
+  font-weight: bold;
+}
+
+/* Ícone da lupa */
+.lupa {
+  cursor: pointer;
+  font-size: 1.1em;
+  line-height: 1;
+  transition: transform 0.2s ease-in-out;
+}
+
+.lupa:hover {
+  transform: scale(1.2);
+}
+
+/* Responsivo: uma coluna no mobile */
+@media screen and (max-width: 768px) {
+  .widget-blocos {
+    grid-template-columns: 1fr;
+    justify-items: center;
+  }
+}

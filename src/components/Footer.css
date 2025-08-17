@@ -1,0 +1,28 @@
+.footer {
+  background-color: #0077B6;   /* ✅ Cor do Header */
+  color: white;                /* ✅ Texto branco */
+  padding: 4px 12px;           /* ✅ Padding mais compacto */
+  height: 34px;                /* ✅ Barra reduzida (~20% abaixo de 42px) */
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+  font-size: 0.8em;
+  box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.08);
+  z-index: 900;
+  box-sizing: border-box;
+}
+
+.footer-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 100%;
+}
+
+.footer-left {
+  font-weight: 500;
+}
+
+.footer-right {
+  font-style: italic;
+}

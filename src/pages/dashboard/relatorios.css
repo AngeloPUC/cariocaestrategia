@@ -1,0 +1,14 @@
+/* src/pages/dashboard/Relatorios.css */
+.relatorios-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background: #f9f9f9;
+}
+
+.relatorios-container h1 {
+  font-size: 4rem;
+  color: #333;
+  text-transform: uppercase;
+}
