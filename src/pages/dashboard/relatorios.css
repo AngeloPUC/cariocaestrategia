@@ -1,14 +1,52 @@
-/* src/pages/dashboard/Relatorios.css */
+/* src/pages/dashboard/relatorios.css */
+
 .relatorios-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-  background: #f9f9f9;
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+  font-family: sans-serif;
+  text-align: center;
 }
 
-.relatorios-container h1 {
-  font-size: 4rem;
-  color: #333;
-  text-transform: uppercase;
+.relatorios-header h1 {
+  margin-bottom: 1.5rem;
+  color: #264653;
+}
+
+.buttons-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  justify-content: center;
+}
+
+.buttons-group button {
+  background: #2a9d8f;
+  color: #fff;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1rem;
+  flex: 1 1 200px;
+  transition: background 0.2s;
+}
+
+.buttons-group button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.buttons-group button:hover:not(:disabled) {
+  background: #21867a;
+}
+
+.error-box {
+  color: #e63946;
+  margin-bottom: 1rem;
+}
+
+.loading {
+  margin-bottom: 1rem;
+  font-style: italic;
 }

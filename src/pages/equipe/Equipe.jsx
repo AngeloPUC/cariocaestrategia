@@ -1,6 +1,7 @@
 // src/pages/equipe/Equipe.jsx
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import WidgetN2 from '../../components/WidgetN2';
 import './Equipe.css';
 
 const API_URL = 'https://api-estrategia.vercel.app';
@@ -37,15 +38,12 @@ export default function EquipePage() {
       }
 
       try {
-        // 1) busca toda a equipe
         const r1 = await fetch(`${API_URL}/equipe`, { headers });
         if (!r1.ok) throw new Error(`Equipe(${r1.status})`);
         const all = await r1.json();
 
-        // 2) filtra só os do seu time
         const mine = all.filter(m => m.owner_email === email);
 
-        // 3) calcula média de feedback apenas do campo 'resultado'
         const enriched = await Promise.all(
           mine.map(async u => {
             let media = '—';
@@ -91,7 +89,6 @@ export default function EquipePage() {
     fetchEquipe();
   }, [token, email]);
 
-
   // filtros
   const handleFilterChange = e => {
     const { name, value } = e.target;
@@ -104,7 +101,6 @@ export default function EquipePage() {
            u.dt_niver.includes(filters.dt_niver) &&
            u.mediaFeedback.includes(filters.mediaFeedback);
   });
-
 
   // edição inline
   const handleEditClick = u => {
@@ -143,7 +139,6 @@ export default function EquipePage() {
   };
   const handleCancelEdit = () => setEditingId(null);
 
-
   // novo inline
   const handleNewClick = () => setShowNewForm(true);
   const handleNewChange = e => {
@@ -176,7 +171,6 @@ export default function EquipePage() {
     setNewData({ nome:'', funcao:'', dt_niver:'' });
   };
 
-
   // delete
   const handleDelete = async id => {
     if (!window.confirm('Deseja excluir este membro?')) return;
@@ -199,6 +193,11 @@ export default function EquipePage() {
         <button onClick={() => navigate('/dashboard')} className="btn-voltar">
           ← Voltar
         </button>
+      </div>
+
+      <WidgetN2 />
+
+      <div className="equipe-header">
         <h2>Modulo Equipe</h2>
         <button onClick={handleNewClick} className="btn-novo">
           + Novo
@@ -290,54 +289,56 @@ export default function EquipePage() {
                   </tr>
                 )}
 
-                {filtered.map(user => (
-                  <tr key={user.id}>
-                    {editingId === user.id ? (
-                      <>
-                        <td>
-                          <input
-                            type="text"
-                            name="nome"
-                            value={editingData.nome}
-                            onChange={handleEditChange}
-                          />
-                        </td>
-                        <td>
-                          <input
-                            type="text"
-                            name="funcao"
-                            value={editingData.funcao}
-                            onChange={handleEditChange}
-                          />
-                        </td>
-                        <td>
-                          <input
-                            type="date"
-                            name="dt_niver"
-                            value={editingData.dt_niver}
-                            onChange={handleEditChange}
-                          />
-                        </td>
-                        <td>{user.mediaFeedback}</td>
-                        <td className="acoes-tabela">
-                          <button onClick={handleSaveEdit}>Salvar</button>
-                          <button onClick={handleCancelEdit}>Cancelar</button>
-                        </td>
-                      </>
-                    ) : (
-                      <>
-                        <td>{user.nome}</td>
-                        <td>{user.funcao}</td>
-                        <td>{user.dt_niver}</td>
-                        <td>{user.mediaFeedback}</td>
-                        <td className="acoes-tabela">
-                          <button onClick={() => handleEditClick(user)}>✏️</button>
-                          <button onClick={() => handleDelete(user.id)}>🗑️</button>
-                        </td>
-                      </>
-                    )}
-                  </tr>
-                ))}
+                {[...filtered]
+                  .sort((a, b) => a.nome.localeCompare(b.nome))
+                  .map(user => (
+                    <tr key={user.id}>
+                      {editingId === user.id ? (
+                        <>
+                          <td>
+                            <input
+                              type="text"
+                              name="nome"
+                              value={editingData.nome}
+                              onChange={handleEditChange}
+                            />
+                          </td>
+                          <td>
+                            <input
+                              type="text"
+                              name="funcao"
+                              value={editingData.funcao}
+                              onChange={handleEditChange}
+                            />
+                          </td>
+                          <td>
+                            <input
+                              type="date"
+                              name="dt_niver"
+                              value={editingData.dt_niver}
+                              onChange={handleEditChange}
+                            />
+                          </td>
+                          <td>{user.mediaFeedback}</td>
+                          <td className="acoes-tabela">
+                            <button onClick={handleSaveEdit}>Salvar</button>
+                            <button onClick={handleCancelEdit}>Cancelar</button>
+                          </td>
+                        </>
+                      ) : (
+                        <>
+                          <td>{user.nome}</td>
+                          <td>{user.funcao}</td>
+                          <td>{user.dt_niver}</td>
+                          <td>{user.mediaFeedback}</td>
+                          <td className="acoes-tabela">
+                            <button onClick={() => handleEditClick(user)}>✏️</button>
+                            <button onClick={() => handleDelete(user.id)}>🗑️</button>
+                          </td>
+                        </>
+                      )}
+                    </tr>
+                  ))}
               </tbody>
             </table>
           )

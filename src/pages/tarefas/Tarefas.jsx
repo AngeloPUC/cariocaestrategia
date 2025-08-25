@@ -175,10 +175,10 @@ export default function Tarefas() {
         </div>
       </div>
 
-      {renderSection('Tarefas Vencidas', vencidas)}
-      {renderSection('Tarefas do Dia', doDia)}
-      {renderSection('Tarefas da Semana', daSemana)}
-      {renderSection('Outras Tarefas', demais)}
+      {renderSection('Tarefas Vencidas:', vencidas)}
+      {renderSection('Tarefas do Dia:', doDia)}
+      {renderSection('Tarefas proximos 7 dias:', daSemana)}
+      {renderSection('Demais Tarefas:', demais)}
 
       {/* form de criação/edição */}
       {(creating || editingTask) && (
