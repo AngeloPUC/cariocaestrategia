@@ -106,11 +106,19 @@ export default function Tarefas() {
   limite.setDate(limite.getDate() + 7)
   const semanaStr = limite.toISOString().slice(0, 10)
 
-  const vencidas  = tarefas.filter(t => t.dt_venc < hoje)
-  const doDia     = tarefas.filter(t => t.dt_venc === hoje)
-  const daSemana  = tarefas.filter(
-    t => t.dt_venc > hoje && t.dt_venc <= semanaStr
-  )
+  // 1) ordenar cada grupo por data de vencimento
+  const vencidas  = tarefas
+    .filter(t => t.dt_venc < hoje)
+    .sort((a, b) => a.dt_venc.localeCompare(b.dt_venc))
+
+  const doDia     = tarefas
+    .filter(t => t.dt_venc === hoje)
+    .sort((a, b) => a.dt_venc.localeCompare(b.dt_venc))
+
+  const daSemana  = tarefas
+    .filter(t => t.dt_venc > hoje && t.dt_venc <= semanaStr)
+    .sort((a, b) => a.dt_venc.localeCompare(b.dt_venc))
+
   const demais    = tarefas.filter(t => t.dt_venc > semanaStr)
 
   const renderSection = (titulo, lista) => {
@@ -175,12 +183,7 @@ export default function Tarefas() {
         </div>
       </div>
 
-      {renderSection('Tarefas Vencidas:', vencidas)}
-      {renderSection('Tarefas do Dia:', doDia)}
-      {renderSection('Tarefas proximos 7 dias:', daSemana)}
-      {renderSection('Demais Tarefas:', demais)}
-
-      {/* form de criação/edição */}
+      {/* 2) exibir form de criação/edição ou detalhes logo abaixo do botão Voltar */}
       {(creating || editingTask) && (
         <div className="form-tarefa">
           <h4>{creating ? '➕ Nova Tarefa' : '✏️ Editar Tarefa'}</h4>
@@ -219,7 +222,6 @@ export default function Tarefas() {
         </div>
       )}
 
-      {/* detalhes da tarefa */}
       {!creating && !editingTask && detalhe && (
         <div className="detalhes-tarefa">
           <button
@@ -234,6 +236,11 @@ export default function Tarefas() {
           <p><strong>Vencimento:</strong> {detalhe.dt_venc || '—'}</p>
         </div>
       )}
+
+      {renderSection('Tarefas Vencidas:', vencidas)}
+      {renderSection('Tarefas do Dia:', doDia)}
+      {renderSection('Tarefas proximos 7 dias:', daSemana)}
+      {renderSection('Demais Tarefas:', demais)}
     </div>
   )
 }

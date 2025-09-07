@@ -46,7 +46,12 @@ export default function Acoes() {
     const listAll = await resAll.json();
     if (!Array.isArray(listAll)) return;
 
-    const userActions = listAll.filter(a => a.quem_id === Number(id));
+    let userActions = listAll.filter(a => a.quem_id === Number(id));
+
+    // ordena por data de vencimento ascendente
+    userActions.sort((a, b) =>
+      a.dt_venc.localeCompare(b.dt_venc)
+    );
 
     // para cada ação, busco feedbacks e calculo média
     const enriched = await Promise.all(
@@ -144,6 +149,7 @@ export default function Acoes() {
       <button className="btn-voltar" onClick={() => window.history.back()}>
         ← Voltar
       </button>
+      <br/>
       <WidgetA2 />
 
       <div className="acoes-container">
@@ -165,9 +171,12 @@ export default function Acoes() {
             onChange={e => handleFuncionario(e.target.value)}
           >
             <option value="">Selecione o funcionário</option>
-            {equipe.map(u => (
-              <option key={u.id} value={u.id}>{u.nome}</option>
-            ))}
+            {[...equipe]
+              .sort((a, b) => a.nome.localeCompare(b.nome))
+              .map(u => (
+                <option key={u.id} value={u.id}>{u.nome}</option>
+              ))
+            }
           </select>
         </div>
 

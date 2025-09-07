@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './Feedback.css';
-
+import WidgetA2 from '../../components/WidgetA2';
 
 const API_URL = 'https://api-estrategia.vercel.app';
 
@@ -208,9 +208,11 @@ export default function Feedback() {
         >
           ← Voltar
         </button>
-        <h2>Feedback</h2>
+      
       </header>
-
+      
+      <WidgetA2 />
+      <h2>Feedback</h2>
       <section className="create-feedback">
         {/* seletor de "Quem" padronizado */}
         <select
@@ -219,11 +221,13 @@ export default function Feedback() {
           onChange={e => handleMemberChange(e.target.value)}
         >
           <option value="">Selecione o funcionário</option>
-          {equipe.map(u => (
-            <option key={u.id} value={u.id}>
-              {u.nome}
-            </option>
-          ))}
+          {[...equipe]
+            .sort((a, b) => a.nome.localeCompare(b.nome))
+            .map(u => (
+              <option key={u.id} value={u.id}>
+                {u.nome}
+              </option>
+            ))}
         </select>
 
         {acoes.length > 0 && (

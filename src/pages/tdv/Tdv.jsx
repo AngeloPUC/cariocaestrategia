@@ -7,6 +7,7 @@ const API = 'https://api-estrategia.vercel.app';
 export default function TdvPage() {
   const [tdvs, setTdvs]               = useState([]);
   const [upcoming, setUpcoming]       = useState([]);
+  const [vencidas, setVencidas]       = useState([]);
   const [monthPoints, setMonthPoints] = useState(0);
   const [semPoints, setSemPoints]     = useState(0);
 
@@ -15,11 +16,11 @@ export default function TdvPage() {
 
   const [isCreating, setIsCreating] = useState(false);
   const [newData, setNewData]       = useState({
-    proposta:  '',
-    n_meses:   '',
-    dia_venc:  '',   // guardamos "DD/MM" aqui
-    pmt_pontos:'',
-    dt_venda:  ''
+    proposta:   '',
+    n_meses:    '',
+    dia_venc:   '',
+    pmt_pontos: '',
+    dt_venda:   ''
   });
 
   const token   = localStorage.getItem('token');
@@ -49,8 +50,10 @@ export default function TdvPage() {
       const mine = Array.isArray(data)
         ? data.filter(item => item.owner_email === email)
         : [];
+
       setTdvs(mine);
       calcUpcoming(mine);
+      calcVencidas(mine);
       calcPoints(mine);
     } catch (err) {
       console.error('Erro ao buscar TDV:', err);
@@ -67,32 +70,67 @@ export default function TdvPage() {
       const remaining = parseInt(item.n_meses, 10);
       if (remaining <= 0) return false;
 
-      // data de venda
       const vendaDate = new Date(item.dt_venda);
-
-      // interpreta o próximo venc: dia e mês
       const { day: vencDay, month: vencMonth } = parseProxVenc(item.dia_venc);
 
-      // só interessa se o vencMonth for este mês ou o anterior
       if (vencMonth !== currentMonth && vencMonth !== prevMonth) {
         return false;
       }
 
-      // data real do vencimento
       const due = new Date(year, vencMonth, vencDay);
       if (due <= vendaDate) return false;
 
       return true;
+    })
+    .sort((a, b) => {
+      const A = parseProxVenc(a.dia_venc);
+      const B = parseProxVenc(b.dia_venc);
+      return A.month !== B.month
+        ? A.month - B.month
+        : A.day - B.day;
     });
 
     setUpcoming(upcomingList);
 
-    // soma de pmt_pontos apenas dos pendentes
     const pts = upcomingList.reduce(
       (sum, item) => sum + Number(item.pmt_pontos || 0),
       0
     );
     setMonthPoints(pts);
+  }
+
+  function calcVencidas(list) {
+    const today        = new Date();
+    const currentMonth = today.getMonth();
+    const year         = today.getFullYear();
+
+    const prevMonths = [
+      (currentMonth + 11) % 12,
+      (currentMonth + 10) % 12,
+      (currentMonth + 9)  % 12
+    ];
+
+    const vencidasList = list.filter(item => {
+      const remaining = parseInt(item.n_meses, 10);
+      if (remaining <= 0) return false;
+
+      const { day: vencDay, month: vencMonth } = parseProxVenc(item.dia_venc);
+      if (!prevMonths.includes(vencMonth)) return false;
+
+      const due = new Date(year, vencMonth, vencDay);
+      if (due > today) return false;
+
+      return true;
+    })
+    .sort((a, b) => {
+      const A = parseProxVenc(a.dia_venc);
+      const B = parseProxVenc(b.dia_venc);
+      return A.month !== B.month
+        ? A.month - B.month
+        : A.day - B.day;
+    });
+
+    setVencidas(vencidasList);
   }
 
   function calcPoints(list) {
@@ -110,7 +148,6 @@ export default function TdvPage() {
       const vendaDate = new Date(item.dt_venda);
       const { day: vencDay, month: vencMonth } = parseProxVenc(item.dia_venc);
 
-      // meses de débito a partir de prox_venc
       const firstDueMonth = vencMonth;
       const lastDueMonth  = Math.min(vencMonth + remaining - 1, semEnd);
 
@@ -127,8 +164,6 @@ export default function TdvPage() {
 
   async function handleConfirm(id, nMeses, diaVencText) {
     const novaMeses = String(Math.max(0, parseInt(nMeses, 10) - 1));
-
-    // incrementar prox venc em 1 mês
     const { day, month } = parseProxVenc(diaVencText);
     const next  = new Date(new Date().getFullYear(), month + 1, day);
     const dd    = String(next.getDate()).padStart(2, '0');
@@ -197,11 +232,11 @@ export default function TdvPage() {
   function handleNew() {
     setIsCreating(true);
     setNewData({
-      proposta:  '',
-      n_meses:   '',
-      dia_venc:  '',
-      pmt_pontos:'',
-      dt_venda:  ''
+      proposta:   '',
+      n_meses:    '',
+      dia_venc:   '',
+      pmt_pontos: '',
+      dt_venda:   ''
     });
   }
 
@@ -312,35 +347,10 @@ export default function TdvPage() {
             </thead>
             <tbody>
               <tr>
-                <td>
-                  <input
-                    name="proposta"
-                    value={newData.proposta}
-                    onChange={handleNewChange}
-                  />
-                </td>
-                <td>
-                  <input
-                    name="n_meses"
-                    value={newData.n_meses}
-                    onChange={handleNewChange}
-                  />
-                </td>
-                <td>
-                  <input
-                    name="dia_venc"
-                    value={newData.dia_venc}
-                    onChange={handleNewChange}
-                    placeholder="DD/MM"
-                  />
-                </td>
-                <td>
-                  <input
-                    name="pmt_pontos"
-                    value={newData.pmt_pontos}
-                    onChange={handleNewChange}
-                  />
-                </td>
+                <td><input name="proposta"   value={newData.proposta}   onChange={handleNewChange} /></td>
+                <td><input name="n_meses"    value={newData.n_meses}    onChange={handleNewChange} /></td>
+                <td><input name="dia_venc"   value={newData.dia_venc}   onChange={handleNewChange} placeholder="DD/MM" /></td>
+                <td><input name="pmt_pontos" value={newData.pmt_pontos} onChange={handleNewChange} /></td>
                 <td>
                   <input
                     name="dt_venda"
@@ -360,24 +370,7 @@ export default function TdvPage() {
       )}
 
       <div className="section">
-        <h3>Fluxo Pendentes</h3>
-        <table className="tabela-tdv">
-          <thead>
-            <tr>
-              <th>Proposta</th>
-              <th>Fluxo pendente</th>
-              <th>Próx. venc</th>
-              <th>Pontos/mês</th>
-              <th>Dt. venda</th>
-              <th>Ações</th>
-            </tr>
-          </thead>
-          <tbody>{upcoming.map(renderRow)}</tbody>
-        </table>
-      </div>
-
-      <div className="section">
-        <h3>Todos os seguros</h3>
+        <h3>Vencidas</h3>
         <table className="tabela-tdv">
           <thead>
             <tr>
@@ -390,16 +383,54 @@ export default function TdvPage() {
             </tr>
           </thead>
           <tbody>
-            {tdvs
-              .sort((a, b) => {
-                const A = parseProxVenc(a.dia_venc);
-                const B = parseProxVenc(b.dia_venc);
-                return A.month !== B.month
-                  ? A.month - B.month
-                  : A.day - B.day;
-              })
-              .map(renderRow)}
+            {vencidas.map(renderRow)}
           </tbody>
+        </table>
+      </div>
+
+      <div className="section">
+        <h3>Fluxo Pendentes</h3>
+        <table className="tabela-tdv">
+          <thead>
+            <tr>
+              <th>Proposta</th>
+              <th>Fluxo pendente</th>
+              <th>Próx. venc</th>
+              <th>Pontos/mês</th>
+              <th>Dt. venda</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody>
+            {upcoming.map(renderRow)}
+          </tbody>
+        </table>
+      </div>
+
+      <div className="section">
+        <h3>Todos os seguros</h3>
+        <table className="tabela-tdv">
+          <thead>
+            <tr>
+              <th>Proposta</th>
+              <th>Fluxo pendente</th>
+              <th>Próx. venc</th>
+                <th>Pontos/mês</th>
+                <th>Dt. venda</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody>
+              {[...tdvs]
+                .sort((a, b) => {
+                  const A = parseProxVenc(a.dia_venc);
+                  const B = parseProxVenc(b.dia_venc);
+                  return A.month !== B.month
+                    ? A.month - B.month
+                    : A.day - B.day;
+                })
+                .map(renderRow)}
+            </tbody>
         </table>
       </div>
     </div>

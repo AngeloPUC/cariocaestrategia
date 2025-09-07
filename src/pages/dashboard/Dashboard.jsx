@@ -25,14 +25,19 @@ export default function Dashboard() {
   const headers = { Authorization: `Bearer ${token}` };
   const API    = 'https://api-estrategia.vercel.app';
 
-  // 1) Carrega lista de equipes (membros)
+  // 1) Carrega lista de equipe (membros)
   useEffect(() => {
     fetch(`${API}/equipe/`, { headers })
       .then(res => {
         if (!res.ok) throw new Error(res.status);
         return res.json();
       })
-      .then(data => setEquipe(Array.isArray(data) ? data : []))
+      .then(data => {
+        const lista = Array.isArray(data) ? data : [];
+        // Ordena alfabeticamente por nome antes de guardar
+        lista.sort((a, b) => a.nome.localeCompare(b.nome));
+        setEquipe(lista);
+      })
       .catch(err => console.error('Erro ao carregar equipes:', err));
   }, [token]);
 
@@ -44,7 +49,6 @@ export default function Dashboard() {
     setAcoesFuncionario([]);
     setFeedbackMedia(null);
 
-    // 2.1) Tenta buscar ações filtradas no servidor
     let listaA = [];
     try {
       const resA = await fetch(
@@ -61,7 +65,6 @@ export default function Dashboard() {
       console.error('Erro na busca filtrada de ações:', err);
     }
 
-    // 2.1.1) Se não veio nada, busca todas e filtra no cliente
     if (listaA.length === 0) {
       try {
         const resAll = await fetch(`${API}/acoes/`, { headers });
@@ -78,7 +81,6 @@ export default function Dashboard() {
 
     setAcoesFuncionario(listaA);
 
-    // 2.2) Feedback
     try {
       const resF = await fetch(
         `${API}/feedback/search/?quem_id=${id}`,
@@ -231,7 +233,6 @@ export default function Dashboard() {
               <p><strong>Base:</strong>    {acaoDetalhada.base     || '—'}</p>
               <p><strong>Descrição:</strong> {acaoDetalhada.descricao || '—'}</p>
               <p><strong>Vencimento:</strong> {acaoDetalhada.dt_venc   || '—'}</p>
-
             </div>
           )}
         </div>

@@ -71,8 +71,25 @@
 /* Tabela de tarefas */
 .tabela-tarefas {
   width: 100%;
+  table-layout: fixed;      /* fixa layout para colunas proporcionais */
   border-collapse: collapse;
   box-shadow: 0 0 6px rgba(0, 0, 0, 0.05);
+}
+
+/* define proporção das colunas: 60% / 20% / 20% */
+.tabela-tarefas th:nth-child(1),
+.tabela-tarefas td:nth-child(1) {
+  width: 60%;
+}
+
+.tabela-tarefas th:nth-child(2),
+.tabela-tarefas td:nth-child(2) {
+  width: 20%;
+}
+
+.tabela-tarefas th:nth-child(3),
+.tabela-tarefas td:nth-child(3) {
+  width: 20%;
 }
 
 .tabela-tarefas th {
