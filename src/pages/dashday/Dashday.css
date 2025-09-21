@@ -1,0 +1,227 @@
+/* src/pages/dashday/Dashday.css
+   Estilo enxuto para o Dash Day: cards, counts e listas.
+   Cores neutras, legibilidade e responsivo.
+*/
+
+.dashday {
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  color: #222;
+  padding: 18px;
+  max-width: 1200px;
+  margin: 0 auto;
+  box-sizing: border-box;
+}
+
+/* Cabeçalho */
+.dashday-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.dashday-header h2 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+/* Erros / mensagens */
+.dashday-errors {
+  color: #7a0b0b;
+  background: #fff1f1;
+  border: 1px solid #f5c2c2;
+  padding: 8px;
+  border-radius: 6px;
+  font-size: 13px;
+}
+
+.error-item + .error-item {
+  margin-top: 6px;
+}
+
+/* Grid principal de cards */
+.dashday-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+/* Card padrão */
+.dashcard {
+  background: #fff;
+  border: 1px solid #e6e6e6;
+  border-radius: 8px;
+  padding: 12px;
+  box-shadow: 0 1px 2px rgba(16,24,40,0.03);
+  min-height: 140px;
+  display: flex;
+  flex-direction: column;
+}
+
+.dashcard h3 {
+  margin: 0 0 8px 0;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+/* Contadores (vencidas / hoje / 7d) */
+.counts {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+}
+
+.counts span {
+  font-size: 13px;
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: #f3f4f6;
+  color: #333;
+}
+
+.counts .overdue {
+  background: #ffecec;
+  color: #a10b0b;
+  border: 1px solid #f4c6c6;
+}
+
+.counts .today {
+  background: #fffbeb;
+  color: #7a5e00;
+  border: 1px solid #f0e1a8;
+}
+
+.counts .soon {
+  background: #eefbf6;
+  color: #0b6a4a;
+  border: 1px solid #cfeade;
+}
+
+/* Listas dentro do card */
+.dashcard .items,
+.tarefas-groups ul,
+.beyond-lists ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  overflow: auto;
+  max-height: 220px;
+}
+
+.dashcard .items li,
+.tarefas-groups li,
+.beyond-lists li {
+  padding: 6px 0;
+  border-bottom: 1px dashed #f0f0f0;
+  font-size: 14px;
+}
+
+.dashcard .items li:last-child,
+.tarefas-groups li:last-child,
+.beyond-lists li:last-child {
+  border-bottom: none;
+}
+
+/* Título com comportamento de link */
+.link-like {
+  color: #0b5fff;
+  cursor: pointer;
+  text-decoration: none;
+  font-weight: 600;
+}
+.link-like:hover {
+  text-decoration: underline;
+}
+
+/* Meta / pequenas informações */
+.meta {
+  font-size: 12px;
+  color: #666;
+  margin-top: 4px;
+}
+
+/* Grupos de tarefas */
+.tarefas-groups .tgroup {
+  margin-bottom: 10px;
+}
+
+.tgroup h4 {
+  margin: 0 0 6px 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: #111;
+}
+
+/* Sessão extra abaixo do grid */
+.dashday-extra {
+  display: flex;
+  gap: 12px;
+  margin-top: 12px;
+  align-items: flex-start;
+}
+
+.birthdays,
+.beyond-week {
+  flex: 1;
+  background: #fff;
+  border: 1px solid #eaeaea;
+  padding: 12px;
+  border-radius: 8px;
+}
+
+.birthdays h3,
+.beyond-week h3 {
+  margin: 0 0 8px 0;
+  font-size: 16px;
+}
+
+/* Listagem além da semana em colunas */
+.beyond-lists {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+
+.beyond-lists h4 {
+  margin: 0 0 6px 0;
+  font-size: 13px;
+}
+
+/* Responsividade */
+@media (max-width: 1100px) {
+  .dashday-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .beyond-lists {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .dashday-extra {
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 520px) {
+  .dashday-grid {
+    grid-template-columns: 1fr;
+  }
+  .beyond-lists {
+    grid-template-columns: 1fr;
+  }
+  .dashday-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .counts span {
+    font-size: 12px;
+  }
+}
+
+/* Pequenos utilitários */
+.vazio {
+  color: #888;
+  font-style: italic;
+}

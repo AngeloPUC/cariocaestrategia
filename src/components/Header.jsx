@@ -1,5 +1,3 @@
-// 📄 src/components/Header.jsx
-
 import { Link, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import './Header.css';
@@ -54,13 +52,21 @@ const Header = () => {
         {logado && (
           <>
             <Link to="/dashboard">🧭 DashBoard</Link>
+            <Link to="/dashday">📌 Dash Day</Link>
+
             <Link to="/equipe">👥 Módulo Equipe</Link>
             <Link to="/acoes">⚙️ Módulo Ações</Link>
             <Link to="/feedback">💬 Módulo Feedback</Link>
             <Link to="/tarefas">✅ Módulo Tarefas</Link>
             <Link to="/tdv">🏷️ Módulo TDV</Link>
             <Link to="/consorcio">🔗 Módulo Consórcio</Link>
+
+            {/* mover Esteira e Agenda para após Consórcio */}
+            <Link to="/esteira">🛒 Esteira</Link>
+            <Link to="/agenda">📅 Agenda</Link>
+
             <Link to="/relatorios">📊 Relatórios</Link>
+
             <button className="btn-sair" onClick={sair}>
               🔓 Sair
             </button>

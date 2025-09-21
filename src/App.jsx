@@ -1,5 +1,3 @@
-// 📁 src/App.jsx
-
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 // ⛑️ Componentes globais
@@ -28,6 +26,11 @@ import Consorcio from "./pages/consorcio/Consorcio";
 import Tarefas   from "./pages/tarefas/Tarefas";
 import Feedback  from "./pages/feedback/Feedback";
 
+// Novas páginas
+import Esteira   from "./pages/esteira/Esteira";
+import Agenda    from "./pages/agenda/Agenda";
+import Dashday   from "./pages/dashday/Dashday";
+
 function App() {
   return (
     <BrowserRouter>
@@ -52,6 +55,17 @@ function App() {
               </PrivateRoute>
             }
           />
+
+          {/* Dash Day logo após Dashboard */}
+          <Route
+            path="/dashday"
+            element={
+              <PrivateRoute>
+                <Dashday />
+              </PrivateRoute>
+            }
+          />
+
           <Route
             path="/relatorios"
             element={
@@ -107,6 +121,24 @@ function App() {
             element={
               <PrivateRoute>
                 <Feedback />
+              </PrivateRoute>
+            }
+          />
+
+          {/* Novas rotas Esteira e Agenda (após Consórcio) */}
+          <Route
+            path="/esteira"
+            element={
+              <PrivateRoute>
+                <Esteira />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/agenda"
+            element={
+              <PrivateRoute>
+                <Agenda />
               </PrivateRoute>
             }
           />
