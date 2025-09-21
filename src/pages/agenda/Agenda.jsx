@@ -1,15 +1,14 @@
-// src/pages/agenda/Agenda.jsx
 import React, { useEffect, useState } from 'react'
 import './Agenda.css'
 
 const API_URL = 'https://api-estrategia.vercel.app'
 
 export default function Agenda() {
-  const [events, setEvents] = useState([])           // todos os eventos vindos da API
-  const [selected, setSelected] = useState(null)     // evento selecionado (detalhe)
-  const [editing, setEditing] = useState(null)       // evento em edição
-  const [creating, setCreating] = useState(false)    // modo criar
-  const [form, setForm] = useState({                 // form controlado
+  const [events, setEvents] = useState([]) // todos os eventos vindos da API
+  const [selected, setSelected] = useState(null) // evento selecionado (detalhe)
+  const [editing, setEditing] = useState(null) // evento em edição
+  const [creating, setCreating] = useState(false) // modo criar
+  const [form, setForm] = useState({ // form controlado
     titulo: '',
     data: '',
     hora: '',
@@ -190,6 +189,7 @@ export default function Agenda() {
   // Próximos além da semana: relação por dia/hora (aparecem abaixo)
   const endOfWeek = new Date(startOfWeek)
   endOfWeek.setDate(endOfWeek.getDate() + 6)
+
   const beyondWeek = events.filter(e => {
     if (!e.data_iso) return false
     const d = new Date(`${e.data_iso}T${(e.hora || '00:00')}:00`)
@@ -202,6 +202,21 @@ export default function Agenda() {
     const d = new Date(e.data_iso)
     const wd = d.getDay()
     return wd === 0 || wd === 6
+  })
+
+  // ------- Agendas vencidas (antes de hoje) -------
+  const todayStart = (() => {
+    const t = new Date()
+    t.setHours(0, 0, 0, 0)
+    return t
+  })()
+
+  const overdue = events.filter(e => {
+    if (!e.data_iso) return false
+    // consideramos vencidas as com data anterior ao início de hoje
+    const d = new Date(e.data_iso)
+    d.setHours(0, 0, 0, 0)
+    return d < todayStart
   })
 
   const renderSelectedDateTime = sel => {
@@ -353,6 +368,41 @@ export default function Agenda() {
             </thead>
             <tbody>
               {beyondWeek.map(ev => (
+                <tr key={ev.id}>
+                  <td>{ev.data_iso || '—'}</td>
+                  <td>{ev.hora || '—'}</td>
+                  <td>{ev.titulo}</td>
+                  <td>{ev.obs || '—'}</td>
+                  <td className="acoes-tabela">
+                    <button className="btn-consultar" onClick={() => handleConsult(ev.id)}>🔍</button>
+                    <button className="btn-editar" onClick={() => handleEditClick(ev)}>✏️</button>
+                    <button className="btn-excluir" onClick={() => handleDelete(ev.id)}>🗑️</button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </section>
+
+      {/* NOVO: Agendas vencidas (antes de hoje) - aparece após "Próximos além da semana" */}
+      <section className="agenda-overdue">
+        <h3>Vencidas ({overdue.length})</h3>
+        {overdue.length === 0 ? (
+          <p className="vazio">Nenhuma agenda vencida</p>
+        ) : (
+          <table className="tabela-overdue">
+            <thead>
+              <tr>
+                <th>Data</th>
+                <th>Hora</th>
+                <th>Título</th>
+                <th>Obs</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody>
+              {overdue.map(ev => (
                 <tr key={ev.id}>
                   <td>{ev.data_iso || '—'}</td>
                   <td>{ev.hora || '—'}</td>
