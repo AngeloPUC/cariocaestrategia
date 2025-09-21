@@ -1,4 +1,3 @@
-// src/pages/esteira/Esteira.jsx
 import React, { useState, useEffect } from 'react'
 import './Esteira.css'
 
@@ -14,16 +13,16 @@ export default function Esteira() {
     cnpjcpf: '',
     operacao: '',
     valor: '',
-    data: ''
+    data: '',
+    obs: ''
   })
 
   const token   = localStorage.getItem('token')
   const headers = {
     'Content-Type': 'application/json',
-    Authorization: `Bearer ${token}`
+    Authorization: token ? `Bearer ${token}` : ''
   }
 
-  // fetch inicial
   useEffect(() => {
     fetch(`${API_URL}/esteira/`, { headers })
       .then(r => r.json())
@@ -31,23 +30,52 @@ export default function Esteira() {
       .catch(console.error)
   }, [token])
 
-  // CRUD
+  // ---------- helpers ----------
+  const parseValor = v => {
+    if (v == null) return 0
+    if (typeof v === 'number') return v
+    let s = String(v).trim()
+    if (s === '') return 0
+    s = s.replace(/\./g, '').replace(/,/g, '.')
+    const n = parseFloat(s)
+    return isNaN(n) ? 0 : n
+  }
+
+  const formatCurrency = n => {
+    return n.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
+  }
+
+  // ---------- CRUD ----------
   const handleDelete = async id => {
     if (!window.confirm('Confirma exclusão deste registro?')) return
-    await fetch(`${API_URL}/esteira/${id}`, {
-      method: 'DELETE',
-      headers
-    })
-    setRows(rows.filter(r => r.id !== id))
-    closeForms()
+    try {
+      await fetch(`${API_URL}/esteira/${id}`, {
+        method: 'DELETE',
+        headers
+      })
+      setRows(rows.filter(r => r.id !== id))
+      closeForms()
+    } catch (e) {
+      console.error('Erro delete esteira', e)
+      alert('Erro ao excluir registro')
+    }
   }
 
   const handleConsult = async id => {
-    const res  = await fetch(`${API_URL}/esteira/${id}`, { headers })
-    const data = await res.json()
-    setDetalhe(data)
-    setEditing(null)
-    setCreating(false)
+    try {
+      const res  = await fetch(`${API_URL}/esteira/${id}`, { headers })
+      if (!res.ok) {
+        const txt = await res.text().catch(() => '')
+        throw new Error(`${res.status} ${txt}`)
+      }
+      const data = await res.json()
+      setDetalhe(data)
+      setEditing(null)
+      setCreating(false)
+    } catch (e) {
+      console.error('Erro consulta esteira', e)
+      alert('Falha ao consultar o registro')
+    }
   }
 
   const handleEditClick = r => {
@@ -57,7 +85,8 @@ export default function Esteira() {
       cnpjcpf: r.cnpjcpf || '',
       operacao: r.operacao || '',
       valor: r.valor || '',
-      data: r.data ? r.data.split('T')[0] : ''
+      data: r.data ? r.data.split('T')[0] : '',
+      obs: r.obs || ''
     })
     setDetalhe(null)
     setCreating(false)
@@ -67,7 +96,7 @@ export default function Esteira() {
     setCreating(true)
     setEditing(null)
     setDetalhe(null)
-    setFormData({ nome: '', cnpjcpf: '', operacao: '', valor: '', data: '' })
+    setFormData({ nome: '', cnpjcpf: '', operacao: '', valor: '', data: '', obs: '' })
   }
 
   const handleChange = e => {
@@ -81,30 +110,34 @@ export default function Esteira() {
       ? `${API_URL}/esteira/`
       : `${API_URL}/esteira/${editingRow.id}`
 
-    // normalizar valor: remover pontos e deixar com vírgula ou decimal conforme backend
     const payload = {
       ...formData,
-      // garantir que data seja ISO yyyy-mm-ddT00:00:00Z se backend esperar datetime
-      data: formData.data ? new Date(formData.data).toISOString() : null
+      data: formData.data ? new Date(formData.data).toISOString() : null,
+      obs: formData.obs || ''
     }
 
-    const res   = await fetch(url, {
-      method,
-      headers,
-      body: JSON.stringify(payload)
-    })
-    const saved = await res.json()
+    try {
+      const res   = await fetch(url, {
+        method,
+        headers,
+        body: JSON.stringify(payload)
+      })
+      const saved = await res.json()
 
-    if (res.ok) {
-      if (creating) {
-        setRows(prev => [...prev, saved].sort((a,b) => (a.data||'').localeCompare(b.data||'')))
+      if (res.ok) {
+        if (creating) {
+          setRows(prev => [...prev, saved].sort((a,b) => (a.data||'').localeCompare(b.data||'')))
+        } else {
+          setRows(prev => prev.map(r => (r.id === saved.id ? saved : r)))
+        }
+        closeForms()
       } else {
-        setRows(prev => prev.map(r => (r.id === saved.id ? saved : r)))
+        const err = typeof saved === 'object' ? JSON.stringify(saved) : String(saved)
+        alert('Erro: ' + err)
       }
-      closeForms()
-    } else {
-      const err = typeof saved === 'object' ? JSON.stringify(saved) : String(saved)
-      alert('Erro: ' + err)
+    } catch (e) {
+      console.error('Erro ao salvar esteira', e)
+      alert('Erro ao salvar registro')
     }
   }
 
@@ -112,10 +145,9 @@ export default function Esteira() {
     setCreating(false)
     setEditing(null)
     setDetalhe(null)
-    setEditing(null)
   }
 
-  // helpers de datas e ordenação
+  // ---------- datas e ordenação ----------
   const today        = new Date()
   const yyyy         = today.getFullYear()
   const monthStart   = new Date(yyyy, today.getMonth(), 1)
@@ -130,18 +162,19 @@ export default function Esteira() {
     return `${dd}/${mm}/${yy}`
   }
 
-  // mapear operacao em categorias
+  // ---------- categorias ----------
   const categoryOf = operacao => {
     if (!operacao) return 'Outras'
     const op = operacao.toLowerCase()
-    // Pessoa Juridica: livre ou direcionado (assumir contains)
-    if (op.includes('livre') || op.includes('direcionado') || op.includes('pj')) return 'Pessoa Juridica'
-    // Habitação
-    if (op.includes('sbpe') || op.includes('fgts') || op.includes('egi') || op.includes('habitação') || op.includes('habitacao')) return 'Habitação'
+    if (op.includes('livre')) return 'Livre'
+    if (op.includes('direcionado')) return 'Direcionado'
+    if (op.includes('egi')) return 'EGI'
+    if (op.includes('fgts')) return 'FGTS'
+    if (op.includes('sbpe')) return 'SBPE'
+    if (op.includes('pj') || op.includes('pessoa juridica')) return 'Direcionado'
     return 'Outras'
   }
 
-  // separar por mês atual / próximos meses e por esteira (categoria)
   const withParsed = rows
     .map(r => ({ ...r, data_iso: r.data || null }))
     .sort((a, b) => (a.data_iso || '').localeCompare(b.data_iso || ''))
@@ -153,7 +186,7 @@ export default function Esteira() {
   })
 
   const proximos = withParsed.filter(r => {
-    if (!r.data_iso) return true // registros sem data ficam em próximos
+    if (!r.data_iso) return true
     const d = new Date(r.data_iso)
     return d > monthEnd
   })
@@ -162,12 +195,16 @@ export default function Esteira() {
     const map = { 'Pessoa Juridica': [], 'Habitação': [], 'Outras': [] }
     list.forEach(r => {
       const cat = categoryOf(r.operacao)
-      map[cat] = map[cat] || []
-      map[cat].push(r)
+      const display = (cat === 'Livre' || cat === 'Direcionado') ? 'Pessoa Juridica'
+        : (cat === 'EGI' || cat === 'FGTS' || cat === 'SBPE') ? 'Habitação'
+        : 'Outras'
+      map[display] = map[display] || []
+      map[display].push(r)
     })
     return map
   }
 
+  // ---------- tabela ----------
   const renderTable = lista => {
     if (!lista || !lista.length) return <p className="vazio">Nenhum registro</p>
     return (
@@ -177,7 +214,7 @@ export default function Esteira() {
             <th>Nome</th>
             <th>CNPJ/CPF</th>
             <th>Operação</th>
-            <th>Valor (R$)</th>
+            <th className="col-valor">Valor (R$)</th>
             <th>Data</th>
             <th>Ações</th>
           </tr>
@@ -188,10 +225,10 @@ export default function Esteira() {
               <td>{r.nome}</td>
               <td>{r.cnpjcpf}</td>
               <td>{r.operacao}</td>
-              <td>{r.valor}</td>
+              <td className="col-valor">{formatCurrency(parseValor(r.valor))}</td>
               <td>{formatDMY(r.data_iso)}</td>
               <td className="acoes-tabela">
-                <button className="btn-editar" onClick={() => { setEditing(r); handleEditClick(r); }}>✏️</button>
+                <button className="btn-editar" onClick={() => handleEditClick(r)}>✏️</button>
                 <button className="btn-excluir" onClick={() => handleDelete(r.id)}>🗑️</button>
                 <button className="btn-consultar" onClick={() => handleConsult(r.id)}>🔍</button>
               </td>
@@ -212,6 +249,24 @@ export default function Esteira() {
     )
   }
 
+  // ---------- totais do mês (somatório filtrado para mês atual) ----------
+  const monthlyRows = withParsed.filter(r => {
+    if (!r.data_iso) return false
+    const d = new Date(r.data_iso)
+    return d >= monthStart && d <= monthEnd
+  })
+
+  const totals = monthlyRows.reduce((acc, r) => {
+    const cat = categoryOf(r.operacao)
+    const val = parseValor(r.valor)
+    if (cat === 'Livre') acc.Livre += val
+    if (cat === 'Direcionado') acc.Direcionado += val
+    if (cat === 'EGI') acc.EGI += val
+    if (cat === 'FGTS') acc.FGTS += val
+    if (cat === 'SBPE') acc.SBPE += val
+    return acc
+  }, { Livre: 0, Direcionado: 0, EGI: 0, FGTS: 0, SBPE: 0 })
+
   const atualGroups = groupByCategory(esteiraAtual)
   const proximosGroups = groupByCategory(proximos)
 
@@ -222,6 +277,34 @@ export default function Esteira() {
           <button className="btn-voltar" onClick={() => window.history.back()}>← Voltar</button>
           <h2>Esteira</h2>
         </div>
+
+        <div className="totals-after-header">
+          <div className="total-item total-livre">
+            <div className="label">Livre</div>
+            <div className="value">{formatCurrency(totals.Livre)}</div>
+          </div>
+
+          <div className="total-item total-direcionado">
+            <div className="label">Direcionado</div>
+            <div className="value">{formatCurrency(totals.Direcionado)}</div>
+          </div>
+
+          <div className="total-item total-egi">
+            <div className="label">EGI</div>
+            <div className="value">{formatCurrency(totals.EGI)}</div>
+          </div>
+
+          <div className="total-item total-fgts">
+            <div className="label">FGTS</div>
+            <div className="value">{formatCurrency(totals.FGTS)}</div>
+          </div>
+
+          <div className="total-item total-sbpe">
+            <div className="label">SBPE</div>
+            <div className="value">{formatCurrency(totals.SBPE)}</div>
+          </div>
+        </div>
+
         <div className="linha-novo">
           <button className="btn-novo" onClick={handleNewClick}>➕ Novo</button>
         </div>
@@ -264,6 +347,11 @@ export default function Esteira() {
             <input type="date" name="data" value={formData.data} onChange={handleChange} />
           </label>
 
+          <label>
+            Observações:
+            <textarea name="obs" value={formData.obs} onChange={handleChange} />
+          </label>
+
           <div className="form-actions">
             <button onClick={handleFormSubmit}>Salvar</button>
             <button className="btn-voltar" onClick={closeForms}>← Voltar</button>
@@ -278,7 +366,7 @@ export default function Esteira() {
           <p><strong>Nome:</strong> {detalhe.nome || '—'}</p>
           <p><strong>CNPJ/CPF:</strong> {detalhe.cnpjcpf || '—'}</p>
           <p><strong>Operação:</strong> {detalhe.operacao || '—'}</p>
-          <p><strong>Valor:</strong> {detalhe.valor || '—'}</p>
+          <p><strong>Valor:</strong> {detalhe.valor ? formatCurrency(parseValor(detalhe.valor)) : '—'}</p>
           <p><strong>Data:</strong> {formatDMY(detalhe.data)}</p>
           <p><strong>Obs:</strong> {detalhe.obs || '—'}</p>
         </div>

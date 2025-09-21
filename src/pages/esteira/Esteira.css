@@ -359,4 +359,61 @@
   font-size: 0.7rem;
 }
 
+/* Totals inline: label à esquerda, valor à direita, aparência consistente com outros widgets */
+.totals-after-header {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin: 10px 0 6px;
+  flex-wrap: wrap;
+}
+
+/* cartão de total com layout em linha entre label e valor */
+.total-item {
+  background: #fff;
+  border: 1px solid #e6e6e6;
+  padding: 8px 12px;
+  border-radius: 10px;
+  min-width: 180px;
+  box-shadow: 0 1px 2px rgba(16,24,40,0.04);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* rótulo (nome da categoria) */
+.total-item .label {
+  font-size: 13px;
+  color: #334155;
+  font-weight: 700;
+  margin-right: 8px;
+  white-space: nowrap;
+}
+
+/* valor alinhado à direita, destaque */
+.total-item .value, .total-item .value-inline {
+  font-size: 15px;
+  color: #0b5fff;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+/* cores sutis por tipo (opcional) */
+.total-livre { background: linear-gradient(90deg,#f0fdf4,#ecfdf5); border-color:#c6f6d5; }
+.total-direcionado { background: linear-gradient(90deg,#f0fdf4,#ecfdf5); border-color:#c6f6d5; }
+.total-egi { background: linear-gradient(90deg,#f0fdf4,#ecfdf5); border-color:#c6f6d5; }
+.total-fgts { background: linear-gradient(90deg,#f0fdf4,#ecfdf5); border-color:#c6f6d5; }
+.total-sbpe { background: linear-gradient(90deg,#f0fdf4,#ecfdf5); border-color:#c6f6d5; }
+
+
+/* responsividade: empilha quando falta espaço */
+@media (max-width: 780px) {
+  .total-item { min-width: 140px; padding: 8px; }
+  .totals-after-header { gap: 8px; }
+}
+
+/* Pequeno ajuste para encaixar com o header */
+.linha-topo { display:flex; align-items:center; gap:12px; }
+.esteira-header { display:flex; flex-direction:column; gap:8px; }
+
 /* Tooltip: se quiser, adicione title={nome} no <td> para mostrar o nome completo */
