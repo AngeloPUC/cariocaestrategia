@@ -185,10 +185,11 @@ export default function Esteira() {
     return d >= monthStart && d <= monthEnd
   })
 
+  // 🔹 Ajuste feito aqui: inclui vencidas também
   const proximos = withParsed.filter(r => {
     if (!r.data_iso) return true
     const d = new Date(r.data_iso)
-    return d > monthEnd
+    return d > monthEnd || d < monthStart
   })
 
   const groupByCategory = list => {

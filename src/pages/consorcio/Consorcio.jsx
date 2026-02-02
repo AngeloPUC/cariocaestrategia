@@ -3,11 +3,10 @@ import React, { useEffect, useState } from 'react';
 import './Consorcio.css';
 
 function formatCurrency(value) {
-  return Number(value)
-    .toLocaleString('pt-BR', {
-      style: 'currency',
-      currency: 'BRL'
-    });
+  return Number(value).toLocaleString('pt-BR', {
+    style: 'currency',
+    currency: 'BRL'
+  });
 }
 
 const API = 'https://api-estrategia.vercel.app';
@@ -15,6 +14,7 @@ const API = 'https://api-estrategia.vercel.app';
 export default function ConsorcioPage() {
   const [list, setList] = useState([]);
   const [pendentes, setPendentes] = useState([]);
+  const [vencidos, setVencidos] = useState([]);
   const [paidTotal, setPaidTotal] = useState(0);
   const [pendingValueTotal, setPendingValueTotal] = useState(0);
 
@@ -25,9 +25,10 @@ export default function ConsorcioPage() {
   const [newData, setNewData] = useState({
     proposta: '',
     dt_venda: '',
-    tipo: 'imovel',
+    tipo: '', // usado como Prox. vencimento (DD/MM)
     valor: '',
-    dia_pg: '1',
+    pagos: 0,
+    pagos_semestre: 0
   });
 
   const token = localStorage.getItem('token');
@@ -38,118 +39,88 @@ export default function ConsorcioPage() {
     fetchAll();
   }, []);
 
+  function splitDiaPg(dia_pg) {
+    if (!dia_pg || typeof dia_pg !== "string") return [0, 0];
+    const parts = dia_pg.split("-");
+    const dezena = parseInt(parts[0], 10) || 0;
+    const unidade = parseInt(parts[1], 10) || 0;
+    return [dezena, unidade];
+  }
+
+  function calcPaidTotal(items) {
+    const sum = items.reduce((acc, item) => {
+      const valorNum = parseFloat(item.valor) || 0;
+      const [, pagosSemestre] = splitDiaPg(item.dia_pg);
+      return acc + (valorNum * pagosSemestre);
+    }, 0);
+    setPaidTotal(sum);
+  }
+
+  function calcPendentes(items) {
+    const sum = items.reduce((acc, item) => {
+      const valorNum = parseFloat(item.valor) || 0;
+      const [, pagosSemestre] = splitDiaPg(item.dia_pg);
+      const pendentes = Math.max(0, 4 - pagosSemestre);
+      return acc + (valorNum * pendentes);
+    }, 0);
+    setPendingValueTotal(sum);
+  }
+
+  function getMonthFromTipo(tipo) {
+    if (!tipo) return null;
+    const parts = tipo.split("/");
+    if (parts.length < 2) return null;
+    return parseInt(parts[1], 10) || null;
+  }
+
   async function fetchAll() {
     try {
       const res = await fetch(`${API}/consorcio`, { headers });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
       const mine = Array.isArray(data)
         ? data.filter(item => item.owner_email === email)
         : [];
+
       setList(mine);
       calcPaidTotal(mine);
       calcPendentes(mine);
+
+      const currentMonth = new Date().getMonth() + 1;
+
+      const pendentesMes = mine.filter(item => {
+        const mes = getMonthFromTipo(item.tipo);
+        return mes === currentMonth;
+      });
+
+      const vencidosList = mine.filter(item => {
+        const mes = getMonthFromTipo(item.tipo);
+        return mes !== null && mes < currentMonth;
+      });
+
+      setPendentes(pendentesMes);
+      setVencidos(vencidosList);
     } catch (err) {
       console.error('Erro ao buscar Consórcio:', err);
     }
   }
 
-  function calcPaidTotal(items) {
-    const today    = new Date();
-    const month    = today.getMonth();
-    const semStart = month <= 5 ? 0 : 6;
-    const semEnd   = month <= 5 ? 5 : 11;
-
-    const sum = items.reduce((acc, item) => {
-      const parcelaValor = Number(item.valor) || 0;
-      const pagos        = parseInt(item.dia_pg, 10) || 0;
-      const vendMonth    = new Date(item.dt_venda).getMonth();
-
-      let count = 0;
-      for (let parcela = 1; parcela <= pagos; parcela++) {
-        // sem shift aqui, pois são parcelas já quitadas
-        const instMonth = vendMonth + (parcela - 1);
-        if (instMonth >= semStart && instMonth <= semEnd) {
-          count++;
-        }
-      }
-      return acc + parcelaValor * count;
-    }, 0);
-
-    setPaidTotal(sum);
-  }
-
-  function calcPendentes(items) {
-    const today    = new Date();
-    const month    = today.getMonth();
-    const year     = today.getFullYear();
-    const semStart = month <= 5 ? 0 : 6;
-    const semEnd   = month <= 5 ? 5 : 11;
-
-    let totalValue = 0;
-    const listMonth = [];
-
-    items.forEach(item => {
-      const parcelaValor = Number(item.valor) || 0;
-      const pagos        = parseInt(item.dia_pg, 10) || 0;
-      const vendDate     = new Date(item.dt_venda);
-      const vendMonth    = vendDate.getMonth();
-      const vendDay      = vendDate.getDate();
-      const dueDay       = item.tipo === 'imovel' ? 15 : 10;
-
-      // se venda após o dia de vencimento, desloca todas as parcelas em 1 mês
-      const offsetShift = vendDay > dueDay ? 1 : 0;
-
-      // 1) soma todas as parcelas não pagas no semestre (parcelas pagos+1 até 4)
-      for (let parcela = pagos + 1; parcela <= 4; parcela++) {
-        const instMonth = vendMonth + offsetShift + (parcela - 1);
-        if (instMonth >= semStart && instMonth <= semEnd) {
-          totalValue += parcelaValor;
-        }
-      }
-
-      // 2) identifica a próxima parcela pendente no mês atual ou no anterior
-      if (pagos < 4) {
-        // índice 0-based da próxima parcela
-        const nextIndex = offsetShift + pagos;
-        const dueMonth  = vendMonth + nextIndex;
-        const dueYear   = year + Math.floor(dueMonth / 12);
-        const normMonth = ((dueMonth % 12) + 12) % 12;
-
-        const prevMonth = month === 0 ? 11 : month - 1;
-        const prevYear  = month === 0 ? year - 1 : year;
-
-        if (
-          dueYear === year &&
-          (normMonth === month ||
-           (normMonth === prevMonth && dueYear === prevYear))
-        ) {
-          listMonth.push(item);
-        }
-      }
+  async function handleConfirm(id, currentDiaPg) {
+    const [dezena, unidade] = splitDiaPg(currentDiaPg);
+    const nextDezena = Math.min(4, dezena + 1);
+    const nextUnidade = unidade + 1;
+    const newDiaPg = `${nextDezena}-${nextUnidade}`;
+    await fetch(`${API}/consorcio/${id}`, {
+      method: 'PUT',
+      headers: { ...headers, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ dia_pg: newDiaPg, owner_email: email }),
     });
-
-    setPendentes(listMonth);
-    setPendingValueTotal(totalValue);
-  }
-
-  async function handleConfirm(id, currentPg) {
-    const nextPg = Math.min(4, parseInt(currentPg, 10) + 1);
-    try {
-      await fetch(`${API}/consorcio/${id}`, {
-        method: 'PUT',
-        headers: { ...headers, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ dia_pg: String(nextPg), owner_email: email }),
-      });
-      fetchAll();
-    } catch (err) {
-      console.error('Erro ao confirmar pgto:', err);
-    }
+    fetchAll();
   }
 
   function handleEdit(row) {
+    const [dezena, unidade] = splitDiaPg(row.dia_pg);
     setEditingId(row.id);
-    setEditData({ ...row });
+    setEditData({ ...row, pagos: dezena, pagos_semestre: unidade });
   }
 
   function handleChange(e) {
@@ -157,32 +128,27 @@ export default function ConsorcioPage() {
   }
 
   async function handleSave(id) {
-    try {
-      await fetch(`${API}/consorcio/${id}`, {
-        method: 'PUT',
-        headers: { ...headers, 'Content-Type': 'application/json' },
-        body: JSON.stringify(editData),
-      });
-      setEditingId(null);
-      fetchAll();
-    } catch (err) {
-      console.error('Erro ao salvar edição:', err);
-    }
+    const pagos = parseInt(editData.pagos, 10) || 0;
+    const sem = parseInt(editData.pagos_semestre, 10) || 0;
+    const dia_pg = `${pagos}-${sem}`;
+    await fetch(`${API}/consorcio/${id}`, {
+      method: 'PUT',
+      headers: { ...headers, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ...editData, dia_pg }),
+    });
+    setEditingId(null);
+    fetchAll();
   }
 
   async function handleDelete(id) {
     if (!window.confirm('Excluir este consórcio?')) return;
-    try {
-      await fetch(`${API}/consorcio/${id}`, { method: 'DELETE', headers });
-      fetchAll();
-    } catch (err) {
-      console.error('Erro ao excluir:', err);
-    }
+    await fetch(`${API}/consorcio/${id}`, { method: 'DELETE', headers });
+    fetchAll();
   }
 
   function handleNew() {
     setIsCreating(true);
-    setNewData({ proposta: '', dt_venda: '', tipo: 'imovel', valor: '', dia_pg: '1' });
+    setNewData({ proposta: '', dt_venda: '', tipo: '', valor: '', pagos: 0, pagos_semestre: 0 });
   }
 
   function handleNewChange(e) {
@@ -190,17 +156,16 @@ export default function ConsorcioPage() {
   }
 
   async function handleNewSave() {
-    try {
-      await fetch(`${API}/consorcio`, {
-        method: 'POST',
-        headers: { ...headers, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...newData, owner_email: email }),
-      });
-      setIsCreating(false);
-      fetchAll();
-    } catch (err) {
-      console.error('Erro ao criar novo consórcio:', err);
-    }
+    const pagos = parseInt(newData.pagos, 10) || 0;
+    const sem = parseInt(newData.pagos_semestre, 10) || 0;
+    const dia_pg = `${pagos}-${sem}`;
+    await fetch(`${API}/consorcio`, {
+      method: 'POST',
+      headers: { ...headers, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ...newData, dia_pg, owner_email: email }),
+    });
+    setIsCreating(false);
+    fetchAll();
   }
 
   function handleNewCancel() {
@@ -208,28 +173,20 @@ export default function ConsorcioPage() {
   }
 
   function renderRow(row) {
+    const valorFormatado = formatCurrency(Number(row.valor) || 0);
+    const proxVenc = row.tipo || ""; // usa campo tipo como DD/MM
+    const pagosLabel = row.dia_pg || "0-0";
+
     if (editingId === row.id) {
       return (
         <tr key={row.id}>
           <td><input name="proposta" value={editData.proposta} onChange={handleChange} /></td>
           <td><input name="dt_venda" type="date" value={editData.dt_venda} onChange={handleChange} /></td>
-          <td>
-            <select name="tipo" value={editData.tipo} onChange={handleChange}>
-              <option value="imovel">imovel</option>
-              <option value="veiculo">veiculo</option>
-              <option value="pesado">pesado</option>
-            </select>
-          </td>
+          <td><input name="tipo" value={editData.tipo} onChange={handleChange} placeholder="DD/MM" /></td>
           <td><input name="valor" value={editData.valor} onChange={handleChange} /></td>
           <td>
-            <input
-              name="dia_pg"
-              type="number"
-              min="1"
-              max="4"
-              value={editData.dia_pg}
-              onChange={handleChange}
-            />
+            <input name="pagos" type="number" value={editData.pagos} onChange={handleChange} /> -
+            <input name="pagos_semestre" type="number" value={editData.pagos_semestre} onChange={handleChange} />
           </td>
           <td className="acao-consorcio">
             <button onClick={() => handleSave(row.id)}>💾</button>
@@ -243,15 +200,11 @@ export default function ConsorcioPage() {
       <tr key={row.id}>
         <td>{row.proposta}</td>
         <td>{row.dt_venda}</td>
-        <td>{row.tipo}</td>
-        <td>{row.valor}</td>
-        <td>{row.dia_pg}</td>
+        <td>{proxVenc}</td>
+        <td>{valorFormatado}</td>
+        <td>{pagosLabel}</td>
         <td className="acao-consorcio">
-          {row.dia_pg < 4 && (
-            <button onClick={() => handleConfirm(row.id, row.dia_pg)} className="btn-confirm">
-              ✔️
-            </button>
-          )}
+          <button onClick={() => handleConfirm(row.id, row.dia_pg)} className="btn-confirm">✔️</button>
           <button onClick={() => handleEdit(row)}>✏️</button>
           <button onClick={() => handleDelete(row.id)}>🗑️</button>
         </td>
@@ -262,9 +215,7 @@ export default function ConsorcioPage() {
   return (
     <div className="consorcio-container">
       <div className="consorcio-header">
-        <button onClick={() => window.history.back()} className="btn-back">
-          ← Voltar
-        </button>
+        <button onClick={() => window.history.back()} className="btn-back">← Voltar</button>
         <h2>Consórcio</h2>
         <button onClick={handleNew} className="btn-new">Novo</button>
       </div>
@@ -286,31 +237,31 @@ export default function ConsorcioPage() {
           <table className="tabela-consorcio">
             <thead>
               <tr>
-                <th>Proposta</th><th>Dt. venda</th><th>Tipo</th>
-                <th>Valor</th><th>Pg pagos</th><th>Ações</th>
+                <th>Proposta</th>
+                <th>Dt. venda</th>
+                <th>Prox. vencimento</th>
+                <th>Valor</th>
+                <th>Pg - Pg semestre</th>
+                <th>Ações</th>
               </tr>
             </thead>
             <tbody>
               <tr>
-                <td><input name="proposta" value={newData.proposta} onChange={handleNewChange} /></td>
-                <td><input name="dt_venda" type="date" value={newData.dt_venda} onChange={handleNewChange} /></td>
                 <td>
-                  <select name="tipo" value={newData.tipo} onChange={handleNewChange}>
-                    <option value="imovel">imovel</option>
-                    <option value="veiculo">veiculo</option>
-                    <option value="pesado">pesado</option>
-                  </select>
+                  <input name="proposta" value={newData.proposta} onChange={handleNewChange} />
                 </td>
-                <td><input name="valor" value={newData.valor} onChange={handleNewChange} /></td>
                 <td>
-                  <input
-                    name="dia_pg"
-                    type="number"
-                    min="1"
-                    max="4"
-                    value={newData.dia_pg}
-                    onChange={handleNewChange}
-                  />
+                  <input name="dt_venda" type="date" value={newData.dt_venda} onChange={handleNewChange} />
+                </td>
+                <td>
+                  <input name="tipo" value={newData.tipo} onChange={handleNewChange} placeholder="DD/MM" />
+                </td>
+                <td>
+                  <input name="valor" value={newData.valor} onChange={handleNewChange} />
+                </td>
+                <td>
+                  <input name="pagos" type="number" value={newData.pagos} onChange={handleNewChange} /> -
+                  <input name="pagos_semestre" type="number" value={newData.pagos_semestre} onChange={handleNewChange} />
                 </td>
                 <td className="acao-consorcio">
                   <button onClick={handleNewSave}>💾</button>
@@ -327,11 +278,32 @@ export default function ConsorcioPage() {
         <table className="tabela-consorcio">
           <thead>
             <tr>
-              <th>Proposta</th><th>Dt. venda</th><th>Tipo</th>
-              <th>Valor</th><th>Pg pagos</th><th>Ações</th>
+              <th>Proposta</th>
+              <th>Dt. venda</th>
+              <th>Prox. vencimento</th>
+              <th>Valor</th>
+              <th>Pg - Pg semestre</th>
+              <th>Ações</th>
             </tr>
           </thead>
           <tbody>{pendentes.map(renderRow)}</tbody>
+        </table>
+      </div>
+
+      <div className="section">
+        <h3>Vencidos</h3>
+        <table className="tabela-consorcio">
+          <thead>
+            <tr>
+              <th>Proposta</th>
+              <th>Dt. venda</th>
+              <th>Prox. vencimento</th>
+              <th>Valor</th>
+              <th>Pg - Pg semestre</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody>{vencidos.map(renderRow)}</tbody>
         </table>
       </div>
 
@@ -340,8 +312,12 @@ export default function ConsorcioPage() {
         <table className="tabela-consorcio">
           <thead>
             <tr>
-              <th>Proposta</th><th>Dt. venda</th><th>Tipo</th>
-              <th>Valor</th><th>Pg pagos</th><th>Ações</th>
+              <th>Proposta</th>
+              <th>Dt. venda</th>
+              <th>Prox. vencimento</th>
+              <th>Valor</th>
+              <th>Pg - Pg semestre</th>
+              <th>Ações</th>
             </tr>
           </thead>
           <tbody>{list.map(renderRow)}</tbody>

@@ -186,7 +186,7 @@ export default function Agenda() {
     eventsBySlot[key].push(ev)
   })
 
-  // Próximos além da semana: relação por dia/hora (aparecem abaixo)
+  // Próximos Eventos: relação por dia/hora (aparecem abaixo)
   const endOfWeek = new Date(startOfWeek)
   endOfWeek.setDate(endOfWeek.getDate() + 6)
 
@@ -352,7 +352,7 @@ export default function Agenda() {
 
       {/* Próximos agendamentos após a semana, listagem por dia/hora */}
       <section className="agenda-upcoming">
-        <h3>Próximos além da semana ({beyondWeek.length})</h3>
+        <h3>Próximos Eventos ({beyondWeek.length})</h3>
         {beyondWeek.length === 0 ? (
           <p className="vazio">Nenhum agendamento além desta semana</p>
         ) : (
@@ -385,7 +385,7 @@ export default function Agenda() {
         )}
       </section>
 
-      {/* NOVO: Agendas vencidas (antes de hoje) - aparece após "Próximos além da semana" */}
+      {/* NOVO: Agendas vencidas (antes de hoje) - aparece após "Próximos Eventos" */}
       <section className="agenda-overdue">
         <h3>Vencidas ({overdue.length})</h3>
         {overdue.length === 0 ? (
