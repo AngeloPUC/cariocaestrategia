@@ -23,6 +23,7 @@ export default function Esteira() {
     Authorization: token ? `Bearer ${token}` : ''
   }
 
+// eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     fetch(`${API_URL}/esteira/`, { headers })
       .then(r => r.json())
