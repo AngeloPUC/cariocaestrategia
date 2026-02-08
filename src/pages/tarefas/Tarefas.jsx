@@ -15,23 +15,28 @@ export default function Tarefas() {
     dt_venc: ''
   })
 
-  const token   = localStorage.getItem('token')
-  const headers = {
-    'Content-Type': 'application/json',
-    Authorization: `Bearer ${token}`
-  }
-
   // fetch inicial
   useEffect(() => {
+    const token   = localStorage.getItem('token')
+    const headers = {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`
+    }
+
     fetch(`${API_URL}/tarefas`, { headers })
       .then(r => r.json())
       .then(data => Array.isArray(data) && setTarefas(data))
       .catch(console.error)
-  }, [token])
+  }, [])
 
   // ações CRUD na mesma página
   const handleDelete = async id => {
     if (!window.confirm('Confirma exclusão desta tarefa?')) return
+    const token   = localStorage.getItem('token')
+    const headers = {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`
+    }
     await fetch(`${API_URL}/tarefas/${id}`, {
       method: 'DELETE',
       headers
@@ -41,6 +46,11 @@ export default function Tarefas() {
   }
 
   const handleConsult = async id => {
+    const token   = localStorage.getItem('token')
+    const headers = {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`
+    }
     const res  = await fetch(`${API_URL}/tarefas/${id}`, { headers })
     const data = await res.json()
     setDetalhe(data)
@@ -72,6 +82,12 @@ export default function Tarefas() {
   }
 
   const handleFormSubmit = async () => {
+    const token   = localStorage.getItem('token')
+    const headers = {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`
+    }
+
     const method = creating ? 'POST' : 'PUT'
     const url    = creating
       ? `${API_URL}/tarefas`
