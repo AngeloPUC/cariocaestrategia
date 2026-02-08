@@ -51,10 +51,23 @@ export default function TdvPage() {
         ? data.filter(item => item.owner_email === email)
         : [];
 
-      setTdvs(mine);
-      calcUpcoming(mine);
-      calcVencidas(mine);
-      calcPoints(mine);
+      // ✅ Ordenação aplicada aqui
+      const ordered = [...mine].sort((a, b) => {
+        const dateA = new Date(a.dt_venda);
+        const dateB = new Date(b.dt_venda);
+        if (dateA.getTime() !== dateB.getTime()) return dateA - dateB;
+        const flowA = parseInt(a.n_meses, 10) || 0;
+        const flowB = parseInt(b.n_meses, 10) || 0;
+        if (flowA !== flowB) return flowA - flowB;
+        const ptsA = Number(a.pmt_pontos) || 0;
+        const ptsB = Number(b.pmt_pontos) || 0;
+        return ptsA - ptsB;
+      });
+
+      setTdvs(ordered);
+      calcUpcoming(ordered);
+      calcVencidas(ordered);
+      calcPoints(ordered);
     } catch (err) {
       console.error('Erro ao buscar TDV:', err);
     }
@@ -81,13 +94,6 @@ export default function TdvPage() {
       if (due <= vendaDate) return false;
 
       return true;
-    })
-    .sort((a, b) => {
-      const A = parseProxVenc(a.dia_venc);
-      const B = parseProxVenc(b.dia_venc);
-      return A.month !== B.month
-        ? A.month - B.month
-        : A.day - B.day;
     });
 
     setUpcoming(upcomingList);
@@ -121,13 +127,6 @@ export default function TdvPage() {
       if (due > today) return false;
 
       return true;
-    })
-    .sort((a, b) => {
-      const A = parseProxVenc(a.dia_venc);
-      const B = parseProxVenc(b.dia_venc);
-      return A.month !== B.month
-        ? A.month - B.month
-        : A.day - B.day;
     });
 
     setVencidas(vencidasList);
@@ -415,22 +414,26 @@ export default function TdvPage() {
               <th>Proposta</th>
               <th>Fluxo pendente</th>
               <th>Próx. venc</th>
-                <th>Pontos/mês</th>
-                <th>Dt. venda</th>
-                <th>Ações</th>
-              </tr>
-            </thead>
-            <tbody>
-              {[...tdvs]
-                .sort((a, b) => {
-                  const A = parseProxVenc(a.dia_venc);
-                  const B = parseProxVenc(b.dia_venc);
-                  return A.month !== B.month
-                    ? A.month - B.month
-                    : A.day - B.day;
-                })
-                .map(renderRow)}
-            </tbody>
+              <th>Pontos/mês</th>
+              <th>Dt. venda</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody>
+            {[...tdvs]
+              .sort((a, b) => {
+                const dateA = new Date(a.dt_venda);
+                const dateB = new Date(b.dt_venda);
+                if (dateA.getTime() !== dateB.getTime()) return dateA - dateB;
+                const flowA = parseInt(a.n_meses, 10) || 0;
+                const flowB = parseInt(b.n_meses, 10) || 0;
+                if (flowA !== flowB) return flowA - flowB;
+                const ptsA = Number(a.pmt_pontos) || 0;
+                const ptsB = Number(b.pmt_pontos) || 0;
+                return ptsA - ptsB;
+              })
+              .map(renderRow)}
+          </tbody>
         </table>
       </div>
     </div>
